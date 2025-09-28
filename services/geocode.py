@@ -4,7 +4,7 @@ import httpx
 import logging
 import os
 from datetime import datetime
-from app.config import GEOAPIFY_KEY
+from config import GEOAPIFY_KEY
 
 # Logging setup (щоденний лог-файл)
 LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "logs")
