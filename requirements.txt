@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+aiogram
+sqlalchemy[asyncio]
+psycopg2-binary
+alembic
+httpx
+python-dotenv
+slowapi  # Для rate limiting
