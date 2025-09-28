@@ -194,73 +194,86 @@ async def text_handler(message: Message):
 async def main_menu_callback(call: CallbackQuery):
     """Повернення до головного меню"""
     await call.answer()
-    await call.message.edit_text(
-        "🏠 **Головне меню**\n\nОбери дію з меню нижче:",
-        reply_markup=WeatherKeyboards.main_menu(),
-        parse_mode="Markdown"
-    )
+    try:
+        await call.message.edit_text(
+            "🏠 **Головне меню**\n\nОбери дію з меню нижче:",
+            reply_markup=WeatherKeyboards.main_menu(),
+            parse_mode="Markdown"
+        )
+    except Exception as e:
+        if "message is not modified" in str(e):
+            pass
+        else:
+            raise
 
 async def settings_menu_callback(call: CallbackQuery):
     """Відкриття меню налаштувань"""
     await call.answer()
-    
     async for session in get_session():
         summary = await get_user_settings_summary(session, call.from_user.id)
-    
-    await call.message.edit_text(
-        summary,
-        reply_markup=WeatherKeyboards.settings_menu(),
-        parse_mode="Markdown"
-    )
+    try:
+        await call.message.edit_text(
+            summary,
+            reply_markup=WeatherKeyboards.settings_menu(),
+            parse_mode="Markdown"
+        )
+    except Exception as e:
+        if "message is not modified" in str(e):
+            pass
+        else:
+            raise
 
 # ===== CALLBACK ОБРОБНИКИ НАЛАШТУВАНЬ =====
 
 async def location_settings_callback(call: CallbackQuery):
     """Налаштування локації"""
     await call.answer()
-    
     async for session in get_session():
         settings = await get_user_weather_settings(session, call.from_user.id)
-    
     location_info = "❌ Локація не встановлена"
     if settings.latitude and settings.longitude:
         location_info = f"📍 **Поточна локація:**\n{settings.location_name or 'Невідома назва'}\n🌐 {settings.latitude:.4f}, {settings.longitude:.4f}\n🕐 Часовий пояс: {settings.timezone}"
-    
     text = f"🌍 **Налаштування локації**\n\n{location_info}"
-    
-    await call.message.edit_text(
-        text,
-        reply_markup=WeatherKeyboards.location_settings(),
-        parse_mode="Markdown"
-    )
+    try:
+        await call.message.edit_text(
+            text,
+            reply_markup=WeatherKeyboards.location_settings(),
+            parse_mode="Markdown"
+        )
+    except Exception as e:
+        if "message is not modified" in str(e):
+            pass
+        else:
+            raise
 
 async def units_settings_callback(call: CallbackQuery):
     """Налаштування одиниць виміру"""
     await call.answer()
-    
     async for session in get_session():
         settings = await get_user_weather_settings(session, call.from_user.id)
-    
     current_units = {
         'temperature_unit': settings.temperature_unit,
         'wind_speed_unit': settings.wind_speed_unit,
         'precipitation_unit': settings.precipitation_unit,
         'timeformat': settings.timeformat
     }
-    
-    await call.message.edit_text(
-        "📏 **Налаштування одиниць виміру**\n\nОбери параметр для зміни:",
-        reply_markup=WeatherKeyboards.units_settings(current_units),
-        parse_mode="Markdown"
-    )
+    try:
+        await call.message.edit_text(
+            "📏 **Налаштування одиниць виміру**\n\nОбери параметр для зміни:",
+            reply_markup=WeatherKeyboards.units_settings(current_units),
+            parse_mode="Markdown"
+        )
+    except Exception as e:
+        if "message is not modified" in str(e):
+            pass
+        else:
+            raise
 
 async def display_settings_callback(call: CallbackQuery):
     """Налаштування відображення"""
     await call.answer()
-    
     async for session in get_session():
         settings = await get_user_weather_settings(session, call.from_user.id)
-    
     display_settings = {
         'show_temperature': settings.show_temperature,
         'show_feels_like': settings.show_feels_like,
@@ -276,12 +289,17 @@ async def display_settings_callback(call: CallbackQuery):
         'show_sunrise_sunset': settings.show_sunrise_sunset,
         'show_daylight_duration': settings.show_daylight_duration,
     }
-    
-    await call.message.edit_text(
-        "📊 **Налаштування відображення**\n\nВибери, що показувати в прогнозі погоди:",
-        reply_markup=WeatherKeyboards.display_settings(display_settings),
-        parse_mode="Markdown"
-    )
+    try:
+        await call.message.edit_text(
+            "📊 **Налаштування відображення**\n\nВибери, що показувати в прогнозі погоди:",
+            reply_markup=WeatherKeyboards.display_settings(display_settings),
+            parse_mode="Markdown"
+        )
+    except Exception as e:
+        if "message is not modified" in str(e):
+            pass
+        else:
+            raise
 
 # ===== ОБРОБНИКИ ПЕРЕМИКАННЯ НАЛАШТУВАНЬ =====
 
@@ -379,19 +397,25 @@ async def format_weather_response(weather_data: dict, location_data: dict, api_p
     if daily and 'time' in daily:
         response += "📅 **Прогноз на найближчі дні:**\n"
         
-        times = daily['time'][:5]  # Перші 5 днів
+        # Визначаємо кількість днів для прогнозу
+        forecast_days = api_params.get('forecast_days')
+        try:
+            forecast_days = int(forecast_days)
+        except (TypeError, ValueError):
+            forecast_days = len(daily['time'])
+        times = daily['time'][:forecast_days]
         temp_max = daily.get('temperature_2m_max', [])
         temp_min = daily.get('temperature_2m_min', [])
         weather_codes = daily.get('weather_code', [])
-        
+
         temp_unit = "°C" if api_params.get('temperature_unit') == 'celsius' else "°F"
-        
-        for i in range(min(len(times), 5)):
+
+        for i in range(len(times)):
             date_str = times[i]
             max_temp = temp_max[i] if i < len(temp_max) else "N/A"
             min_temp = temp_min[i] if i < len(temp_min) else "N/A"
             weather_code = weather_codes[i] if i < len(weather_codes) else 0
-            
+
             # Форматуємо дату
             try:
                 from datetime import datetime
@@ -405,7 +429,7 @@ async def format_weather_response(weather_data: dict, location_data: dict, api_p
                 date_formatted = f"{day_name}, {date_obj.strftime('%d.%m')}"
             except:
                 date_formatted = date_str
-            
+
             weather_desc = get_weather_description(weather_code)
             response += f"• {date_formatted}: {max_temp}°/{min_temp}° {weather_desc}\n"
     
@@ -428,6 +452,99 @@ def get_weather_description(weather_code: int) -> str:
         95: "⛈️ Гроза", 96: "⛈️ Гроза з градом", 99: "⛈️ Сильна гроза"
     }
     return descriptions.get(weather_code, f"Код {weather_code}")
+
+async def today_weather_callback(call: CallbackQuery):
+    """Показати прогноз на сьогодні"""
+    await call.answer("Отримуємо прогноз на сьогодні...")
+    
+    try:
+        async for session in get_session():
+            settings = await get_user_weather_settings(session, call.from_user.id)
+            
+            if not settings.latitude or not settings.longitude:
+                await call.message.edit_text(
+                    "❌ Локація не встановлена. Вкажіть місто або координати.",
+                    reply_markup=WeatherKeyboards.main_menu()
+                )
+                return
+            
+            api_params = await get_api_parameters(session, call.from_user.id)
+            # Тимчасово перезаписуємо кількість днів для прогнозу на сьогодні
+            api_params['forecast_days'] = 1
+            api_params['daily'] = 'weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum,precipitation_probability_max,wind_speed_10m_max'
+
+            weather_data = await get_weather(settings.latitude, settings.longitude, api_params)
+
+            location_data = {
+                "city": settings.location_name or "Невідома локація",
+                "lat": settings.latitude,
+                "lon": settings.longitude
+            }
+
+            response = await format_weather_response(weather_data, location_data, api_params)
+
+            await call.message.edit_text(
+                response,
+                reply_markup=WeatherKeyboards.weather_type_menu(),
+                parse_mode="Markdown"
+            )
+
+    except Exception as e:
+        from aiogram.exceptions import TelegramBadRequest
+        if isinstance(e, TelegramBadRequest) and "message is not modified" in str(e):
+            pass
+        else:
+            await call.message.edit_text(
+                f"❌ Помилка отримання прогнозу: {str(e)}",
+                reply_markup=WeatherKeyboards.main_menu()
+            )
+            logging.error(f"Помилка отримання прогнозу на сьогодні для {call.from_user.id}: {str(e)}")
+
+async def three_days_weather_callback(call: CallbackQuery):
+    """Показати прогноз на 3 дні"""
+    await call.answer("Отримуємо прогноз на 3 дні...")
+    try:
+        async for session in get_session():
+            api_params = await get_api_parameters(session, call.from_user.id)
+            settings = await get_user_weather_settings(session, call.from_user.id)
+
+        if not settings.latitude or not settings.longitude:
+            await call.message.edit_text(
+                "❌ **Локація не встановлена**\n\nСпочатку встанови свою локацію в налаштуваннях або надішли назву міста.",
+                reply_markup=WeatherKeyboards.location_settings(),
+                parse_mode="Markdown"
+            )
+            return
+
+        # Додаємо current і daily параметри, обмежуємо daily до 3 днів
+        api_params['current'] = 'temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m'
+        api_params['forecast_days'] = 3
+
+        weather_data = await get_weather(settings.latitude, settings.longitude, api_params)
+
+        location_data = {
+            "city": settings.location_name or "Невідома локація",
+            "lat": settings.latitude,
+            "lon": settings.longitude
+        }
+
+        # Форматуємо відповідь, але daily буде тільки 3 дні
+        response = await format_weather_response(weather_data, location_data, api_params)
+
+        await call.message.edit_text(
+            response,
+            reply_markup=WeatherKeyboards.weather_type_menu(),
+            parse_mode="Markdown"
+        )
+    except Exception as e:
+        from aiogram.exceptions import TelegramBadRequest
+        if isinstance(e, TelegramBadRequest) and "message is not modified" in str(e):
+            pass
+        else:
+            await call.message.edit_text(
+                f"❌ Помилка отримання погоди: {str(e)}",
+                reply_markup=WeatherKeyboards.main_menu()
+            )
 
 # ===== РЕЄСТРАЦІЯ ОБРОБНИКІВ =====
 
@@ -459,6 +576,11 @@ def register_handlers(dp: Dispatcher):
     dp.callback_query.register(current_weather_callback, lambda c: c.data == "weather:current")
     dp.callback_query.register(weekly_weather_callback, lambda c: c.data == "weather:weekly")
     dp.callback_query.register(hourly_weather_callback, lambda c: c.data == "weather:hourly")
+    dp.callback_query.register(today_weather_callback, lambda c: c.data == "weather:today")
+# ===== ДОДАТКОВИЙ CALLBACK: ПРОГНОЗ НА СЬОГОДНІ =====
+    dp.callback_query.register(three_days_weather_callback, lambda c: c.data == "weather:3days")
+# ===== ДОДАТКОВИЙ CALLBACK: ПРОГНОЗ НА 3 ДНІ =====
+
     
     # === CALLBACK ОБРОБНИКИ ОДИНИЦЬ ===
     dp.callback_query.register(temperature_unit_callback, lambda c: c.data == "units:temperature")
@@ -494,7 +616,7 @@ async def current_weather_callback(call: CallbackQuery):
         async for session in get_session():
             api_params = await get_api_parameters(session, call.from_user.id)
             settings = await get_user_weather_settings(session, call.from_user.id)
-        
+
         if not settings.latitude or not settings.longitude:
             await call.message.edit_text(
                 "❌ **Локація не встановлена**\n\nСпочатку встанови свою локацію в налаштуваннях або надішли назву міста.",
@@ -502,32 +624,37 @@ async def current_weather_callback(call: CallbackQuery):
                 parse_mode="Markdown"
             )
             return
-        
+
         # Додаємо current параметри для поточної погоди
         api_params['current'] = 'temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m'
-        
+
         weather_data = await get_weather(settings.latitude, settings.longitude, api_params)
-        
+
         location_data = {
             "city": settings.location_name or "Невідома локація",
             "lat": settings.latitude,
             "lon": settings.longitude
         }
-        
+
         response = await format_weather_response(weather_data, location_data, api_params)
-        
+
         await call.message.edit_text(
             response,
             reply_markup=WeatherKeyboards.weather_type_menu(),
             parse_mode="Markdown"
         )
-        
+
     except Exception as e:
-        await call.message.edit_text(
-            f"❌ Помилка отримання погоди: {str(e)}",
-            reply_markup=WeatherKeyboards.main_menu()
-        )
-        logging.error(f"Помилка отримання поточної погоди для {call.from_user.id}: {str(e)}")
+        from aiogram.exceptions import TelegramBadRequest
+        if isinstance(e, TelegramBadRequest) and "message is not modified" in str(e):
+            # Тихо ігноруємо, не показуємо користувачу і не логуємо
+            pass
+        else:
+            await call.message.edit_text(
+                f"❌ Помилка отримання погоди: {str(e)}",
+                reply_markup=WeatherKeyboards.main_menu()
+            )
+            logging.error(f"Помилка отримання поточної погоди для {call.from_user.id}: {str(e)}")
 
 async def weekly_weather_callback(call: CallbackQuery):
     """Показати тижневий прогноз"""
