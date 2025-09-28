@@ -304,6 +304,7 @@ async def display_settings_callback(call: CallbackQuery):
 # ===== ОБРОБНИКИ ПЕРЕМИКАННЯ НАЛАШТУВАНЬ =====
 
 async def toggle_setting_callback(call: CallbackQuery):
+    logging.info(f"Toggle callback: {call.data} from user {call.from_user.id}")
     """Перемикання булевих налаштувань"""
     await call.answer()
     
@@ -316,12 +317,16 @@ async def toggle_setting_callback(call: CallbackQuery):
         status = "✅ Увімкнено" if new_value else "❌ Вимкнено"
         await call.answer(f"{setting_name.replace('show_', '').replace('_', ' ').title()}: {status}", show_alert=True)
         
-        # Оновлюємо клавіатуру
-        await display_settings_callback(call)
+        # Оновлюємо відповідну клавіатуру
+        if setting_name == "notification_enabled":
+            await notifications_settings_callback(call)
+        else:
+            await display_settings_callback(call)
+        logging.info(f"Toggled {setting_name} for user {call.from_user.id}: new value {new_value}")
         
     except ValueError as e:
         await call.answer(f"Помилка: {str(e)}", show_alert=True)
-        logging.error(f"Помилка перемикання {setting_name} для {call.from_user.id}: {str(e)}")
+        logging.error(f"Error toggling {setting_name} for user {call.from_user.id}: {str(e)}")
 
 async def set_unit_callback(call: CallbackQuery):
     """Встановлення одиниць виміру"""
@@ -434,6 +439,41 @@ async def format_weather_response(weather_data: dict, location_data: dict, api_p
             response += f"• {date_formatted}: {max_temp}°/{min_temp}° {weather_desc}\n"
     
     return response
+
+# In handlers.py, add after precipitation_unit_callback
+
+async def timeformat_unit_callback(call: CallbackQuery):
+    """Вибір формату часу"""
+    await call.answer()
+    
+    async for session in get_session():
+        settings = await get_user_weather_settings(session, call.from_user.id)
+    
+    await call.message.edit_text(
+        "🕒 **Оберіть формат часу:**",
+        reply_markup=WeatherKeyboards.timeformat_unit_selector(settings.timeformat),
+        parse_mode="Markdown"
+    )
+
+async def set_timeformat_callback(call: CallbackQuery):
+    """Встановлення формату часу"""
+    await call.answer()
+    
+    _, _, timeformat = call.data.split(":", 2)
+    
+    try:
+        async for session in get_session():
+            settings = await get_user_weather_settings(session, call.from_user.id)
+            settings.timeformat = timeformat
+            settings.updated_at = datetime.now()
+            await session.commit()
+        
+        await call.answer(f"Формат часу встановлено: {timeformat}", show_alert=True)
+        await units_settings_callback(call)
+        
+    except Exception as e:
+        await call.answer(f"Помилка: {str(e)}", show_alert=True)
+        logging.error(f"Помилка встановлення timeformat для {call.from_user.id}: {str(e)}")
 
 def get_weather_description(weather_code: int) -> str:
     """Отримати опис погоди за WMO кодом"""
@@ -549,6 +589,8 @@ async def three_days_weather_callback(call: CallbackQuery):
 # ===== РЕЄСТРАЦІЯ ОБРОБНИКІВ =====
 
 def register_handlers(dp: Dispatcher):
+    # === CALLBACK ОБРОБНИКИ РЕДАГУВАННЯ СПОВІЩЕНЬ ===
+    dp.callback_query.register(edit_notifications_display_callback, lambda c: c.data == "notifications:edit_display")
     """Реєстрація всіх обробників"""
     
     # Команди
@@ -577,9 +619,13 @@ def register_handlers(dp: Dispatcher):
     dp.callback_query.register(weekly_weather_callback, lambda c: c.data == "weather:weekly")
     dp.callback_query.register(hourly_weather_callback, lambda c: c.data == "weather:hourly")
     dp.callback_query.register(today_weather_callback, lambda c: c.data == "weather:today")
-# ===== ДОДАТКОВИЙ CALLBACK: ПРОГНОЗ НА СЬОГОДНІ =====
+    # ===== ДОДАТКОВИЙ CALLBACK: ПРОГНОЗ НА СЬОГОДНІ =====
     dp.callback_query.register(three_days_weather_callback, lambda c: c.data == "weather:3days")
-# ===== ДОДАТКОВИЙ CALLBACK: ПРОГНОЗ НА 3 ДНІ =====
+    # ===== ДОДАТКОВИЙ CALLBACK: ПРОГНОЗ НА 3 ДНІ =====
+
+    # === CALLBACK ОБРОБНИКИ ФОРМАТУ ЧАСУ ===
+    dp.callback_query.register(timeformat_unit_callback, lambda call: call.data == "units:timeformat")
+    dp.callback_query.register(set_timeformat_callback, lambda call: call.data.startswith("set_unit:timeformat:"))
 
     
     # === CALLBACK ОБРОБНИКИ ОДИНИЦЬ ===
@@ -596,9 +642,13 @@ def register_handlers(dp: Dispatcher):
     dp.callback_query.register(forecast_settings_callback, lambda c: c.data == "settings:forecast")
     dp.callback_query.register(forecast_days_callback, lambda c: c.data == "forecast:days")
     dp.callback_query.register(set_forecast_days_callback, lambda c: c.data.startswith("set_forecast:days:"))
+        # === CALLBACK ОБРОБНИКИ МИНУЛИХ ДНІВ ===
+    dp.callback_query.register(forecast_past_days_callback, lambda c: c.data == "forecast:past_days")
+    dp.callback_query.register(set_forecast_past_days_callback, lambda c: c.data.startswith("set_forecast:past_days:"))
     
     # === CALLBACK ОБРОБНИКИ СПОВІЩЕНЬ ===
     dp.callback_query.register(notifications_settings_callback, lambda c: c.data == "settings:notifications")
+    dp.callback_query.register(notifications_time_callback, lambda c: c.data == "notifications:time")
     
     # === CALLBACK ОБРОБНИК SUMMARY ===
     dp.callback_query.register(settings_summary_callback, lambda c: c.data == "settings:summary")
@@ -608,6 +658,56 @@ def register_handlers(dp: Dispatcher):
 
 # ===== ДОДАТКОВІ CALLBACK ОБРОБНИКИ =====
 
+async def edit_notifications_display_callback(call: CallbackQuery):
+    """Відкрити меню налаштування відображення для сповіщень"""
+    await call.answer()
+    async for session in get_session():
+        settings = await get_user_weather_settings(session, call.from_user.id)
+    display_settings = {
+        'show_temperature': settings.show_temperature,
+        'show_feels_like': settings.show_feels_like,
+        'show_humidity': settings.show_humidity,
+        'show_pressure': settings.show_pressure,
+        'show_wind': settings.show_wind,
+        'show_precipitation': settings.show_precipitation,
+        'show_precipitation_probability': settings.show_precipitation_probability,
+        'show_cloud_cover': settings.show_cloud_cover,
+        'show_uv_index': settings.show_uv_index,
+        'show_visibility': settings.show_visibility,
+        'show_daily_temperature': settings.show_daily_temperature,
+        'show_sunrise_sunset': settings.show_sunrise_sunset,
+        'show_daylight_duration': settings.show_daylight_duration,
+    }
+    await call.message.edit_text(
+        "📊 **Налаштування відображення для сповіщень**\n\nВибери, що показувати в повідомленнях:",
+        reply_markup=WeatherKeyboards.display_settings(display_settings),
+        parse_mode="Markdown"
+    )
+
+async def forecast_past_days_callback(call: CallbackQuery):
+    """Вибір кількості минулих днів"""
+    await call.answer()
+    async for session in get_session():
+        settings = await get_user_weather_settings(session, call.from_user.id)
+    await call.message.edit_text(
+        "🕰️ **Оберіть кількість минулих днів:**\n\nМаксимум 7 днів згідно з обмеженнями Open-Meteo API.",
+        reply_markup=WeatherKeyboards.forecast_past_days_selector(settings.past_days),
+        parse_mode="Markdown"
+    )
+
+async def set_forecast_past_days_callback(call: CallbackQuery):
+    """Встановлення кількості минулих днів"""
+    await call.answer()
+    _, _, days_str = call.data.split(":", 2)
+    days = int(days_str)
+    try:
+        async for session in get_session():
+            await update_user_units(session, call.from_user.id, past_days=days)
+        await call.answer(f"Минулих днів встановлено: {days}", show_alert=True)
+        await forecast_settings_callback(call)
+    except Exception as e:
+        await call.answer(f"Помилка: {str(e)}", show_alert=True)
+        logging.error(f"Помилка встановлення past_days для {call.from_user.id}: {str(e)}")
 async def current_weather_callback(call: CallbackQuery):
     """Показати поточну погоду"""
     await call.answer()
@@ -837,6 +937,15 @@ async def notifications_settings_callback(call: CallbackQuery):
         f"Стан: {'✅ Увімкнені' if settings.notification_enabled else '❌ Вимкнені'}\n"
         f"Час: {settings.notification_time or 'Не встановлено'}",
         reply_markup=WeatherKeyboards.notifications_settings(notification_settings),
+        parse_mode="Markdown"
+    )
+
+async def notifications_time_callback(call: CallbackQuery):
+    """Обробник вибору часу сповіщень"""
+    await call.answer()
+    await call.message.edit_text(
+        "⏰ **Оберіть час для щоденних сповіщень:**\n\nНапишіть час у форматі HH:MM (наприклад, 08:30)",
+        reply_markup=WeatherKeyboards.back_button("settings:notifications"),
         parse_mode="Markdown"
     )
 

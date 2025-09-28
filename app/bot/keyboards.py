@@ -5,6 +5,20 @@ from typing import Dict, Any
 
 class WeatherKeyboards:
     @staticmethod
+    def forecast_past_days_selector(current: int = 0) -> InlineKeyboardMarkup:
+        """Вибір кількості минулих днів для історичного прогнозу"""
+        keyboard = []
+        days_options = [0, 1, 2, 3, 5, 7]
+        for days in days_options:
+            emoji = "✅" if current == days else "⚪"
+            text = f"{emoji} {days} {'день' if days == 1 else ('дні' if 1 < days < 5 else 'днів' if days > 0 else 'немає')}"
+            keyboard.append([InlineKeyboardButton(
+                text=text,
+                callback_data=f"set_forecast:past_days:{days}"
+            )])
+        keyboard.append([InlineKeyboardButton(text="⬅️ Назад", callback_data="settings:forecast")])
+        return InlineKeyboardMarkup(inline_keyboard=keyboard)
+    @staticmethod
     def main_menu() -> InlineKeyboardMarkup:
         """Головне меню погодного бота"""
         keyboard = [
@@ -107,7 +121,25 @@ class WeatherKeyboards:
         
         keyboard.append([InlineKeyboardButton(text="⬅️ Назад", callback_data="settings:units")])
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
+    
+    # In keyboards.py, add to WeatherKeyboards class
 
+    @staticmethod
+    def timeformat_unit_selector(current: str = 'iso8601') -> InlineKeyboardMarkup:
+        """Вибір формату часу"""
+        keyboard = [
+            [InlineKeyboardButton(
+                text=f"{'✅' if current == 'iso8601' else '⚪'} ISO8601 (2025-09-28T16:55:01Z)", 
+                callback_data="set_unit:timeformat:iso8601"
+            )],
+            [InlineKeyboardButton(
+                text=f"{'✅' if current == 'unixtime' else '⚪'} Unix Timestamp (1625097600)", 
+                callback_data="set_unit:timeformat:unixtime"
+            )],
+            [InlineKeyboardButton(text="⬅️ Назад", callback_data="settings:units")]
+        ]
+        return InlineKeyboardMarkup(inline_keyboard=keyboard)
+    
     @staticmethod
     def display_settings(settings: Dict[str, bool] = None) -> InlineKeyboardMarkup:
         """Налаштування відображення даних"""
@@ -217,19 +249,23 @@ class WeatherKeyboards:
         """Налаштування сповіщень"""
         if not settings:
             settings = {'notification_enabled': False, 'notification_time': None}
-        
+
         enabled = settings.get('notification_enabled', False)
         time_text = settings.get('notification_time', 'Не встановлено')
-        
+
         keyboard = [
             [InlineKeyboardButton(
-                text=f"{'✅' if enabled else '❌'} Щоденні сповіщення", 
+                text=f"{'✅' if enabled else '❌'} Щоденні сповіщення",
                 callback_data="toggle:notification_enabled"
             )],
             [InlineKeyboardButton(
-                text=f"⏰ Час сповіщень: {time_text}", 
+                text=f"⏰ Час сповіщень: {time_text}",
                 callback_data="notifications:time"
             )] if enabled else [],
+            [InlineKeyboardButton(
+                text="✏️ Редагувати сповіщення",
+                callback_data="notifications:edit_display"
+            )],
             [InlineKeyboardButton(text="⬅️ Назад до налаштувань", callback_data="menu:settings")]
         ]
         return InlineKeyboardMarkup(inline_keyboard=[row for row in keyboard if row])
@@ -239,7 +275,7 @@ class WeatherKeyboards:
         """Вибір часового поясу"""
         keyboard = [
             [InlineKeyboardButton(text="🌐 Автоматично", callback_data="set_timezone:auto")],
-            [InlineKeyboardButton(text="🇺🇦 Київ (Europe/Kiev)", callback_data="set_timezone:Europe/Kiev")],
+            [InlineKeyboardButton(text="🇺🇦 Київ (Europe/Kyiv)", callback_data="set_timezone:Europe/Kyiv")],
             [InlineKeyboardButton(text="🌍 GMT", callback_data="set_timezone:GMT")],
             [InlineKeyboardButton(text="🇺🇸 Нью-Йорк", callback_data="set_timezone:America/New_York")],
             [InlineKeyboardButton(text="🇬🇧 Лондон", callback_data="set_timezone:Europe/London")],

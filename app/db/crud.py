@@ -118,11 +118,11 @@ async def update_user_units(
     temperature_unit: str = None,
     wind_speed_unit: str = None,
     precipitation_unit: str = None,
-    timeformat: str = None
+    timeformat: str = None,
+    past_days: int = None
 ) -> None:
-    """Оновити одиниці виміру користувача"""
+    """Оновити одиниці виміру користувача та past_days"""
     settings = await get_user_weather_settings(session, telegram_id)
-    
     if temperature_unit and temperature_unit in TEMPERATURE_UNITS:
         settings.temperature_unit = temperature_unit
     if wind_speed_unit and wind_speed_unit in WIND_SPEED_UNITS:
@@ -131,10 +131,11 @@ async def update_user_units(
         settings.precipitation_unit = precipitation_unit
     if timeformat and timeformat in ['iso8601', 'unixtime']:
         settings.timeformat = timeformat
-    
+    if past_days is not None and 0 <= past_days <= 92:
+        settings.past_days = past_days
     settings.updated_at = datetime.now()
     await session.commit()
-    logger.info(f"Оновлено одиниці виміру для користувача {telegram_id}")
+    logger.info(f"Оновлено одиниці виміру та past_days для користувача {telegram_id}")
 
 async def toggle_display_setting(
     session: AsyncSession,
