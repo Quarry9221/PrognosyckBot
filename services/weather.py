@@ -1,11 +1,9 @@
 # services/weather.py - Покращений сервіс для роботи з Open-Meteo API
 
 import httpx
-import logging
 from typing import Dict, Any, Optional
 from datetime import datetime, timedelta
-
-logger = logging.getLogger(__name__)
+from bot.logger_config import logger
 
 class WeatherAPIError(Exception):
     """Помилка API погоди"""

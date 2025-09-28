@@ -1,4 +1,4 @@
-import logging
+from bot.logger_config import logger
 from datetime import datetime
 from aiogram.types import CallbackQuery
 from bot.keyboards import WeatherKeyboards
@@ -62,7 +62,7 @@ async def set_forecast_days_callback(call: CallbackQuery):
         
     except Exception as e:
         await call.answer(f"Помилка: {str(e)}", show_alert=True)
-        logging.error(f"Помилка встановлення forecast_days для {call.from_user.id}: {str(e)}")
+        logger.error(f"Помилка встановлення forecast_days для {call.from_user.id}: {str(e)}")
 
 
 async def forecast_past_days_callback(call: CallbackQuery):
@@ -96,4 +96,4 @@ async def set_forecast_past_days_callback(call: CallbackQuery):
         
     except Exception as e:
         await call.answer(f"Помилка: {str(e)}", show_alert=True)
-        logging.error(f"Помилка встановлення past_days для {call.from_user.id}: {str(e)}")
+        logger.error(f"Помилка встановлення past_days для {call.from_user.id}: {str(e)}")

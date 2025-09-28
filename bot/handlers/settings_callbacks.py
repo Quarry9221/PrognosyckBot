@@ -4,7 +4,7 @@ from bot.keyboards import WeatherKeyboards
 from db.crud import get_user_settings_summary, get_user_weather_settings
 from db.database import get_session
 from aiogram.types import CallbackQuery
-import logging
+from bot.logger_config import logger
 
 
 

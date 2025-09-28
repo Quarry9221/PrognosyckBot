@@ -1,5 +1,4 @@
 # bot/handlers/commands.py
-import logging
 from bot.logger_config import logger  # імпортуємо налаштований logger
 from aiogram import types
 from aiogram.types import Message

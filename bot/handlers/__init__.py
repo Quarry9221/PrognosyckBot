@@ -1,6 +1,6 @@
 from bot.handlers.commands import start_handler, help_handler, settings_handler
 from bot.handlers.text import text_handler
-from bot.handlers.menu_callbacks import main_menu_callback, settings_menu_callback
+from bot.handlers.menu_callbacks import help_callback_handler, main_menu_callback, settings_menu_callback
 from bot.handlers.settings_callbacks import edit_notifications_display_callback, location_settings_callback, units_settings_callback, display_settings_callback
 from bot.handlers.weather_callbacks import current_weather_callback, weekly_weather_callback, hourly_weather_callback, today_weather_callback, three_days_weather_callback
 from bot.handlers.units_callbacks import toggle_setting_callback, set_unit_callback, temperature_unit_callback, wind_speed_unit_callback, precipitation_unit_callback, timeformat_unit_callback, set_timeformat_callback
@@ -25,6 +25,7 @@ def register_handlers(dp: Dispatcher):
     # Callback
     dp.callback_query.register(main_menu_callback, lambda c: c.data == "menu:main")
     dp.callback_query.register(settings_menu_callback, lambda c: c.data == "menu:settings")
+    dp.callback_query.register(help_callback_handler, lambda c: c.data == "action:help")
     
     dp.callback_query.register(location_settings_callback, lambda c: c.data == "settings:location")
     dp.callback_query.register(units_settings_callback, lambda c: c.data == "settings:units")

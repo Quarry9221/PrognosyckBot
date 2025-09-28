@@ -1,4 +1,4 @@
-import logging
+from bot.logger_config import logger
 from datetime import datetime
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from bot.handlers.notifications_callbacks import notifications_settings_callback
@@ -12,7 +12,7 @@ from db.crud import (
 )
 
 async def toggle_setting_callback(call: CallbackQuery):
-    logging.info(f"Toggle callback: {call.data} from user {call.from_user.id}")
+    logger.info(f"Toggle callback: {call.data} from user {call.from_user.id}")
     """Перемикання булевих налаштувань"""
     await call.answer()
     
@@ -30,11 +30,11 @@ async def toggle_setting_callback(call: CallbackQuery):
             await notifications_settings_callback(call)
         else:
             await display_settings_callback(call)
-        logging.info(f"Toggled {setting_name} for user {call.from_user.id}: new value {new_value}")
+        logger.info(f"Toggled {setting_name} for user {call.from_user.id}: new value {new_value}")
         
     except ValueError as e:
         await call.answer(f"Помилка: {str(e)}", show_alert=True)
-        logging.error(f"Error toggling {setting_name} for user {call.from_user.id}: {str(e)}")
+        logger.error(f"Error toggling {setting_name} for user {call.from_user.id}: {str(e)}")
 
 
 async def set_unit_callback(call: CallbackQuery):
@@ -62,7 +62,7 @@ async def set_unit_callback(call: CallbackQuery):
         
     except Exception as e:
         await call.answer(f"Помилка: {str(e)}", show_alert=True)
-        logging.error(f"Помилка встановлення {unit_type}={unit_value} для {call.from_user.id}: {str(e)}")
+        logger.error(f"Помилка встановлення {unit_type}={unit_value} для {call.from_user.id}: {str(e)}")
 
 
 async def temperature_unit_callback(call: CallbackQuery):
@@ -151,4 +151,4 @@ async def set_timeformat_callback(call: CallbackQuery):
         
     except Exception as e:
         await call.answer(f"Помилка: {str(e)}", show_alert=True)
-        logging.error(f"Помилка встановлення timeformat для {call.from_user.id}: {str(e)}")
+        logger.error(f"Помилка встановлення timeformat для {call.from_user.id}: {str(e)}")

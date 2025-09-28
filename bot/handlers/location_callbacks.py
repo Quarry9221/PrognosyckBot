@@ -6,7 +6,7 @@ from db.database import get_session
 from db.crud import get_user_weather_settings
 from aiogram.fsm.context import FSMContext
 from bot.states import SettingsStates
-import logging
+from bot.logger_config import logger
 
 
 
@@ -58,4 +58,4 @@ async def set_timezone_callback(call: CallbackQuery):
 
     except Exception as e:
         await call.answer(f"Помилка: {str(e)}", show_alert=True)
-        logging.error(f"Помилка встановлення timezone для {call.from_user.id}: {str(e)}")
+        logger.error(f"Помилка встановлення timezone для {call.from_user.id}: {str(e)}")

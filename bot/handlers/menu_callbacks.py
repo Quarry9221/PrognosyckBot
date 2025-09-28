@@ -38,3 +38,16 @@ async def settings_menu_callback(call: CallbackQuery):
             pass
         else:
             raise
+
+async def help_callback_handler(callback_query: CallbackQuery):
+    help_text = (
+        "ℹ️ <b>Допомога по боту:</b>\n"
+        "• Введіть назву міста, щоб отримати прогноз.\n"
+        "• Використовуйте меню для налаштувань.\n"
+        "• Для додаткових питань — звертайтесь до підтримки."
+    )
+    await callback_query.message.edit_text(
+        help_text,
+        reply_markup=WeatherKeyboards.main_menu(),
+        parse_mode="HTML"
+    )

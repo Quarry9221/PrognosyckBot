@@ -1,16 +1,14 @@
-import logging
+from bot.logger_config import logger
 from datetime import datetime
 from typing import Optional, Dict, Any, List
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models import (
     User, UserWeatherSettings, UserMessage, BotChat,
     TEMPERATURE_UNITS, WIND_SPEED_UNITS, PRECIPITATION_UNITS
 )
-
-logger = logging.getLogger(__name__)
 
 # === КОРИСТУВАЧІ ===
 
@@ -352,3 +350,32 @@ async def update_setting(session: AsyncSession, telegram_id: int, key: str, valu
         raise ValueError(f"Невідомий або некоректний параметр: {key}={value}")
     settings.updated_at = datetime.now()
     await session.commit()
+
+async def get_user_state(session, telegram_id: int) -> str | None:
+    result = await session.execute(
+        text("SELECT state FROM users WHERE telegram_id = :telegram_id"),
+        {"telegram_id": telegram_id}
+    )
+    state = result.scalar_one_or_none()
+    return state
+
+async def set_user_state(session, telegram_id: int, state: str):
+    query = text("UPDATE users SET state = :state WHERE telegram_id = :telegram_id")
+    await session.execute(query, {"state": state, "telegram_id": telegram_id})
+    await session.commit()
+
+
+
+async def save_notification_time(session, user_id: int, time_str: str):
+    """
+    Зберігає час щоденних сповіщень для користувача у таблиці user_weather_settings.
+    """
+    query = await session.execute(
+        select(UserWeatherSettings).where(UserWeatherSettings.user_id == user_id)
+    )
+    settings = query.scalar_one_or_none()
+    if settings:
+        settings.notification_time = time_str
+        settings.notification_enabled = True  # якщо хочеш включити сповіщення
+        session.add(settings)
+        await session.commit()

@@ -1,4 +1,4 @@
-import logging
+from bot.logger_config import logger
 from aiogram.types import CallbackQuery
 from db.database import get_session
 from db.crud import get_user_weather_settings, get_api_parameters
@@ -50,7 +50,7 @@ async def current_weather_callback(call: CallbackQuery):
                 f"❌ Помилка отримання погоди: {str(e)}",
                 reply_markup=WeatherKeyboards.main_menu()
             )
-            logging.error(f"Помилка отримання поточної погоди для {call.from_user.id}: {str(e)}")
+            logger.error(f"Помилка отримання поточної погоди для {call.from_user.id}: {str(e)}")
 
 
 async def weekly_weather_callback(call: CallbackQuery):
@@ -104,7 +104,7 @@ async def today_weather_callback(call: CallbackQuery):
                 f"❌ Помилка отримання прогнозу: {str(e)}",
                 reply_markup=WeatherKeyboards.main_menu()
             )
-            logging.error(f"Помилка отримання прогнозу на сьогодні для {call.from_user.id}: {str(e)}")
+            logger.error(f"Помилка отримання прогнозу на сьогодні для {call.from_user.id}: {str(e)}")
 
 
 async def three_days_weather_callback(call: CallbackQuery):
@@ -149,4 +149,4 @@ async def three_days_weather_callback(call: CallbackQuery):
                 f"❌ Помилка отримання погоди: {str(e)}",
                 reply_markup=WeatherKeyboards.main_menu()
             )
-            logging.error(f"Помилка отримання погоди для {call.from_user.id}: {str(e)}")
+            logger.error(f"Помилка отримання погоди для {call.from_user.id}: {str(e)}")
