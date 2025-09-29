@@ -1,4 +1,3 @@
-
 # Логіка для роботи з Geoapify
 import httpx
 import os
@@ -61,5 +60,5 @@ async def geocode_place(place: str) -> dict:
         "city": result.get("city"),
         "state": result.get("state"),
         "country": result.get("country"),
-        "formatted": result.get("formatted")
+        "formatted": result.get("formatted"),
     }

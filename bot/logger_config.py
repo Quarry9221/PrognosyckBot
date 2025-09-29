@@ -18,11 +18,11 @@ logger.setLevel(logging.INFO)  # рівень для бота
 # --- Handler для файлу з ротацією щодня ---
 file_handler = TimedRotatingFileHandler(
     filename=os.path.join(LOG_DIR, "bot.log"),
-    when="midnight",      # ротація щодня
+    when="midnight",  # ротація щодня
     interval=1,
-    backupCount=7,         # зберігати логи за останні 7 днів
+    backupCount=7,  # зберігати логи за останні 7 днів
     encoding="utf-8",
-    delay=True             # важливо для Windows: відкриває файл при першому записі
+    delay=True,  # важливо для Windows: відкриває файл при першому записі
 )
 file_handler.suffix = "%Y-%m-%d"  # додає дату до імені файлу
 file_handler.setFormatter(logging.Formatter(LOG_FORMAT, datefmt=DATE_FORMAT))
@@ -34,8 +34,8 @@ console_handler.setFormatter(logging.Formatter(LOG_FORMAT, datefmt=DATE_FORMAT))
 logger.addHandler(console_handler)
 
 # --- Зменшуємо лог SQLAlchemy до WARNING (щоб не спамив SELECT/ROLLBACK/COMMIT) ---
-logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
-logging.getLogger('sqlalchemy.pool').setLevel(logging.WARNING)
+logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+logging.getLogger("sqlalchemy.pool").setLevel(logging.WARNING)
 
 # --- Логи aiogram залишаємо на INFO ---
-logging.getLogger('aiogram').setLevel(logging.INFO)
+logging.getLogger("aiogram").setLevel(logging.INFO)

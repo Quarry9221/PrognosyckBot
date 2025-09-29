@@ -26,37 +26,45 @@ def register_handlers(dp: Dispatcher):
     dp.callback_query.register(main_menu_callback, lambda c: c.data == "menu:main")
     dp.callback_query.register(settings_menu_callback, lambda c: c.data == "menu:settings")
     dp.callback_query.register(help_callback_handler, lambda c: c.data == "action:help")
-    
+
+    # Settings
     dp.callback_query.register(location_settings_callback, lambda c: c.data == "settings:location")
     dp.callback_query.register(units_settings_callback, lambda c: c.data == "settings:units")
     dp.callback_query.register(display_settings_callback, lambda c: c.data == "settings:display")
-    
+
+    # Weather
     dp.callback_query.register(current_weather_callback, lambda c: c.data == "weather:current")
     dp.callback_query.register(weekly_weather_callback, lambda c: c.data == "weather:weekly")
     dp.callback_query.register(hourly_weather_callback, lambda c: c.data == "weather:hourly")
     dp.callback_query.register(today_weather_callback, lambda c: c.data == "weather:today")
     dp.callback_query.register(three_days_weather_callback, lambda c: c.data == "weather:3days")
     
+    # Units callbacks
     dp.callback_query.register(toggle_setting_callback, lambda c: c.data.startswith("toggle:"))
     dp.callback_query.register(set_unit_callback, lambda c: c.data.startswith("set_unit:"))
     
+    # Specific unit callbacks
     dp.callback_query.register(temperature_unit_callback, lambda c: c.data == "units:temperature")
     dp.callback_query.register(wind_speed_unit_callback, lambda c: c.data == "units:wind_speed")
     dp.callback_query.register(precipitation_unit_callback, lambda c: c.data == "units:precipitation")
-    
+
+    # Timeformat callbacks
     dp.callback_query.register(timeformat_unit_callback, lambda call: call.data == "units:timeformat")
     dp.callback_query.register(set_timeformat_callback, lambda call: call.data.startswith("set_unit:timeformat:"))
     
+    # Location callbacks
     dp.callback_query.register(set_location_callback, lambda c: c.data == "location:set")
     dp.callback_query.register(timezone_callback, lambda c: c.data == "location:timezone")
     dp.callback_query.register(set_timezone_callback, lambda c: c.data.startswith("set_timezone:"))
     
+    # Forecast callbacks
     dp.callback_query.register(forecast_settings_callback, lambda c: c.data == "settings:forecast")
     dp.callback_query.register(forecast_days_callback, lambda c: c.data == "forecast:days")
     dp.callback_query.register(set_forecast_days_callback, lambda c: c.data.startswith("set_forecast:days:"))
     dp.callback_query.register(forecast_past_days_callback, lambda c: c.data == "forecast:past_days")
     dp.callback_query.register(set_forecast_past_days_callback, lambda c: c.data.startswith("set_forecast:past_days:"))
     
+    # Notifications callbacks
     dp.callback_query.register(notifications_settings_callback, lambda c: c.data == "settings:notifications")
     dp.callback_query.register(notifications_time_callback, lambda c: c.data == "notifications:time")
     

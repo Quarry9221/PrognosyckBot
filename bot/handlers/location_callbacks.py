@@ -9,7 +9,6 @@ from bot.states import SettingsStates
 from bot.logger_config import logger
 
 
-
 async def set_location_callback(call: CallbackQuery, state: FSMContext):
     """Початок процесу встановлення локації"""
     await call.answer()
@@ -22,7 +21,7 @@ async def set_location_callback(call: CallbackQuery, state: FSMContext):
         "• 48.9166, 24.7111\n\n"
         "Або надішли геолокацію через вкладення.",
         reply_markup=WeatherKeyboards.location_input_help(),
-        parse_mode="Markdown"
+        parse_mode="Markdown",
     )
 
     await state.set_state(SettingsStates.waiting_location)
@@ -36,7 +35,7 @@ async def timezone_callback(call: CallbackQuery):
         "🕐 **Оберіть часовий пояс:**\n\n"
         "Рекомендується використовувати автоматичний вибір.",
         reply_markup=WeatherKeyboards.timezone_selector(),
-        parse_mode="Markdown"
+        parse_mode="Markdown",
     )
 
 

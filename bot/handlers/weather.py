@@ -5,6 +5,7 @@ from services.weather import get_weather
 
 router = Router()
 
+
 @router.callback_query(lambda c: c.data.startswith("weather:"))
 async def weather_menu_handler(callback: CallbackQuery):
     data = callback.data.split(":")[1]

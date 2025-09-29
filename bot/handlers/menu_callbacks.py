@@ -11,7 +11,7 @@ async def main_menu_callback(call: CallbackQuery):
         await call.message.edit_text(
             "🏠 **Головне меню**\n\nОбери дію з меню нижче:",
             reply_markup=WeatherKeyboards.main_menu(),
-            parse_mode="Markdown"
+            parse_mode="Markdown",
         )
     except Exception as e:
         if "message is not modified" in str(e):
@@ -26,18 +26,19 @@ async def settings_menu_callback(call: CallbackQuery):
     summary = ""
     async for session in get_session():
         summary = await get_user_settings_summary(session, call.from_user.id)
-    
+
     try:
         await call.message.edit_text(
             summary,
             reply_markup=WeatherKeyboards.settings_menu(),
-            parse_mode="Markdown"
+            parse_mode="Markdown",
         )
     except Exception as e:
         if "message is not modified" in str(e):
             pass
         else:
             raise
+
 
 async def help_callback_handler(callback_query: CallbackQuery):
     help_text = (
@@ -50,7 +51,5 @@ async def help_callback_handler(callback_query: CallbackQuery):
         "Автор: quarryck"
     )
     await callback_query.message.edit_text(
-        help_text,
-        reply_markup=WeatherKeyboards.main_menu(),
-        parse_mode="HTML"
+        help_text, reply_markup=WeatherKeyboards.main_menu(), parse_mode="HTML"
     )
