@@ -44,7 +44,10 @@ async def help_callback_handler(callback_query: CallbackQuery):
         "ℹ️ <b>Допомога по боту:</b>\n"
         "• Введіть назву міста, щоб отримати прогноз.\n"
         "• Використовуйте меню для налаштувань.\n"
-        "• Для додаткових питань — звертайтесь до підтримки."
+        "• Для додаткових питань — звертайтесь до підтримки.\n"
+        "\n"
+        "<b>Підтримати автора:</b> <a href='https://base.monobank.ua/quarryck'>monobank.ua/quarryck</a>\n"
+        "Автор: quarryck"
     )
     await callback_query.message.edit_text(
         help_text,

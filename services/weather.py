@@ -30,6 +30,14 @@ class WeatherService:
         Raises:
             WeatherAPIError: При помилці отримання даних
         """
+        # Додаткова валідація типів
+        if not isinstance(latitude, (float, int)) or not isinstance(longitude, (float, int)):
+            logger.warning(f"Некоректний тип координат: latitude={latitude}, longitude={longitude}")
+            raise WeatherAPIError("Координати мають бути числами")
+        if not isinstance(params, dict):
+            logger.warning(f"Некоректний тип параметрів: {params}")
+            raise WeatherAPIError("Параметри мають бути словником")
+
         try:
             # Підготовка параметрів запиту
             api_params = {
@@ -37,30 +45,36 @@ class WeatherService:
                 'longitude': longitude,
                 **params
             }
-            
+
+            # Перевірка наявності обов'язкових параметрів
+            if not (-90 <= float(latitude) <= 90) or not (-180 <= float(longitude) <= 180):
+                logger.warning(f"Координати поза межами: latitude={latitude}, longitude={longitude}")
+                raise WeatherAPIError("Координати поза допустимими межами")
+
             logger.info(f"Запит погоди для {latitude}, {longitude} з параметрами: {api_params}")
-            
+
             # Виконання HTTP запиту
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.get(WeatherService.BASE_URL, params=api_params)
                 response.raise_for_status()
-                
+
                 data = response.json()
-                
+
                 # Перевіряємо наявність помилки в відповіді
                 if 'error' in data:
+                    logger.error(f"Open-Meteo API повернув помилку: {data['error']}")
                     raise WeatherAPIError(f"API помилка: {data['error']}")
-                
+
                 # Логування успішної відповіді
                 logger.info(f"Успішно отримано дані погоди для {latitude}, {longitude}")
-                
+
                 return data
-                
+
         except httpx.TimeoutException:
             error_msg = "Перевищено час очікування відповіді від сервера погоди"
             logger.error(error_msg)
             raise WeatherAPIError(error_msg)
-            
+
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 400:
                 error_msg = "Некоректні параметри запиту до API погоди"
@@ -70,15 +84,19 @@ class WeatherService:
                 error_msg = "Проблема з сервером погоди. Спробуйте пізніше"
             else:
                 error_msg = f"Помилка HTTP {e.response.status_code}"
-            
-            logger.error(f"HTTP помилка при запиті погоди: {e.response.status_code}")
+
+            logger.error(f"HTTP помилка при запиті погоди: {e.response.status_code}, details: {e.response.text}")
             raise WeatherAPIError(error_msg)
-            
+
         except httpx.RequestError as e:
             error_msg = "Помилка мережі при отриманні даних про погоду"
             logger.error(f"Мережева помилка: {str(e)}")
             raise WeatherAPIError(error_msg)
-            
+
+        except ValueError as ve:
+            logger.error(f"Валідаційна помилка: {str(ve)}")
+            raise WeatherAPIError(str(ve))
+
         except Exception as e:
             error_msg = f"Несподівана помилка при отриманні погоди: {str(e)}"
             logger.error(error_msg, exc_info=True)
@@ -96,59 +114,86 @@ class WeatherService:
             Очищені параметри
         """
         clean_params = {}
-        
+
         # Обов'язкові параметри
         if 'latitude' not in params or 'longitude' not in params:
+            logger.warning(f"Відсутні координати у параметрах: {params}")
             raise ValueError("Широта та довгота обов'язкові")
-        
-        clean_params['latitude'] = float(params['latitude'])
-        clean_params['longitude'] = float(params['longitude'])
-        
+
+        try:
+            clean_params['latitude'] = float(params['latitude'])
+            clean_params['longitude'] = float(params['longitude'])
+        except Exception:
+            logger.warning(f"Некоректний тип координат: {params}")
+            raise ValueError("Координати мають бути числами")
+
         # Валідація координат
         if not (-90 <= clean_params['latitude'] <= 90):
+            logger.warning(f"Широта поза межами: {clean_params['latitude']}")
             raise ValueError("Широта повинна бути між -90 та 90")
         if not (-180 <= clean_params['longitude'] <= 180):
+            logger.warning(f"Довгота поза межами: {clean_params['longitude']}")
             raise ValueError("Довгота повинна бути між -180 та 180")
-        
+
         # Опціональні параметри з валідацією
         if 'elevation' in params and params['elevation'] is not None:
-            elevation = float(params['elevation'])
-            if -1000 <= elevation <= 9000:  # Розумні межі висоти
-                clean_params['elevation'] = elevation
-        
+            try:
+                elevation = float(params['elevation'])
+                if -1000 <= elevation <= 9000:
+                    clean_params['elevation'] = elevation
+                else:
+                    logger.warning(f"Висота поза межами: {elevation}")
+            except Exception:
+                logger.warning(f"Некоректна висота: {params['elevation']}")
+
         if 'forecast_days' in params:
-            days = int(params['forecast_days'])
-            if 1 <= days <= 16:
-                clean_params['forecast_days'] = days
-            else:
+            try:
+                days = int(params['forecast_days'])
+                if 1 <= days <= 16:
+                    clean_params['forecast_days'] = days
+                else:
+                    clean_params['forecast_days'] = 7
+            except Exception:
+                logger.warning(f"Некоректний forecast_days: {params['forecast_days']}")
                 clean_params['forecast_days'] = 7
-        
+
         if 'past_days' in params:
-            days = int(params['past_days'])
-            if 0 <= days <= 92:
-                clean_params['past_days'] = days
-        
+            try:
+                days = int(params['past_days'])
+                if 0 <= days <= 92:
+                    clean_params['past_days'] = days
+            except Exception:
+                logger.warning(f"Некоректний past_days: {params['past_days']}")
+
         # Одиниці виміру
         valid_temp_units = ['celsius', 'fahrenheit']
         if params.get('temperature_unit') in valid_temp_units:
             clean_params['temperature_unit'] = params['temperature_unit']
-        
+        elif 'temperature_unit' in params:
+            logger.warning(f"Некоректна одиниця температури: {params.get('temperature_unit')}")
+
         valid_wind_units = ['kmh', 'ms', 'mph', 'kn']
         if params.get('wind_speed_unit') in valid_wind_units:
             clean_params['wind_speed_unit'] = params['wind_speed_unit']
-        
+        elif 'wind_speed_unit' in params:
+            logger.warning(f"Некоректна одиниця швидкості вітру: {params.get('wind_speed_unit')}")
+
         valid_precip_units = ['mm', 'inch']
         if params.get('precipitation_unit') in valid_precip_units:
             clean_params['precipitation_unit'] = params['precipitation_unit']
-        
+        elif 'precipitation_unit' in params:
+            logger.warning(f"Некоректна одиниця опадів: {params.get('precipitation_unit')}")
+
         valid_timeformats = ['iso8601', 'unixtime']
         if params.get('timeformat') in valid_timeformats:
             clean_params['timeformat'] = params['timeformat']
-        
+        elif 'timeformat' in params:
+            logger.warning(f"Некоректний формат часу: {params.get('timeformat')}")
+
         # Часовий пояс
         if 'timezone' in params and params['timezone']:
             clean_params['timezone'] = str(params['timezone'])
-        
+
         # Параметри погодних змінних
         for param_type in ['hourly', 'daily', 'current']:
             if param_type in params and params[param_type]:
@@ -156,7 +201,9 @@ class WeatherService:
                     clean_params[param_type] = params[param_type]
                 elif isinstance(params[param_type], list):
                     clean_params[param_type] = ','.join(params[param_type])
-        
+                else:
+                    logger.warning(f"Некоректний тип параметра {param_type}: {params[param_type]}")
+
         return clean_params
 
 class WeatherFormatter:
