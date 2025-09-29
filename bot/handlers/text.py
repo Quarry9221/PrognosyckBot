@@ -1,4 +1,3 @@
-# bot/handlers/text.py
 import re
 from bot.logger_config import logger
 from aiogram.types import Message
@@ -18,12 +17,11 @@ from bot.handlers.utils import format_weather_response
 
 
 async def text_handler(message: Message):
-    """Обробник текстових повідомлень (погода або налаштування часу)"""
     async for session in get_session():
         state = await get_user_state(session, message.from_user.id)
 
         if state == "AWAITING_NOTIFICATION_TIME":
-            # очікуємо час сповіщень у форматі HH:MM
+
             if re.match(r"^\d{2}:\d{2}$", message.text.strip()):
                 await save_notification_time(
                     session, message.from_user.id, message.text.strip()
@@ -37,9 +35,8 @@ async def text_handler(message: Message):
                 await message.reply(
                     "❌ Невірний формат часу. Вкажи у HH:MM (наприклад, 08:30)"
                 )
-            return  # вихід, щоб не обробляло як місто
+            return
 
-        # Інакше — обробляємо як місто для погоди
         place = message.text.strip()
         logger.info(f"Запит погоди від користувача {message.from_user.id}: '{place}'")
 

@@ -7,7 +7,6 @@ from db.crud import get_user_weather_settings, update_user_units
 
 
 async def forecast_settings_callback(call: CallbackQuery):
-    """Налаштування прогнозу"""
     await call.answer()
 
     async for session in get_session():
@@ -29,7 +28,6 @@ async def forecast_settings_callback(call: CallbackQuery):
 
 
 async def forecast_days_callback(call: CallbackQuery):
-    """Вибір кількості днів прогнозу"""
     await call.answer()
 
     async for session in get_session():
@@ -44,7 +42,6 @@ async def forecast_days_callback(call: CallbackQuery):
 
 
 async def set_forecast_days_callback(call: CallbackQuery):
-    """Встановлення кількості днів прогнозу"""
     await call.answer()
 
     _, _, days_str = call.data.split(":", 2)
@@ -68,7 +65,6 @@ async def set_forecast_days_callback(call: CallbackQuery):
 
 
 async def forecast_past_days_callback(call: CallbackQuery):
-    """Вибір кількості минулих днів"""
     await call.answer()
 
     async for session in get_session():
@@ -83,7 +79,6 @@ async def forecast_past_days_callback(call: CallbackQuery):
 
 
 async def set_forecast_past_days_callback(call: CallbackQuery):
-    """Встановлення кількості минулих днів"""
     await call.answer()
 
     _, _, days_str = call.data.split(":", 2)

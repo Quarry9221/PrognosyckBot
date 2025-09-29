@@ -1,23 +1,11 @@
-# Логіка для роботи з Geoapify
 import httpx
 import os
 from datetime import datetime
 from config import GEOAPIFY_KEY
 from bot.logger_config import logger
 
-# Логи налаштовуються через bot.logger_config
-
 
 async def geocode_place(place: str) -> dict:
-    """
-    Геокодування місця через Geoapify з детальною валідацією та обробкою помилок
-    Args:
-        place: Назва місця
-    Returns:
-        dict з координатами та інформацією про місце
-    Raises:
-        ValueError: Якщо геокодування не вдалося
-    """
     if not place or not isinstance(place, str) or len(place.strip()) < 2:
         logger.warning(f"Некоректний запит геокодування: '{place}'")
         raise ValueError("Введіть коректну назву місця")

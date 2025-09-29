@@ -5,7 +5,6 @@ from db.crud import get_user_settings_summary
 
 
 async def main_menu_callback(call: CallbackQuery):
-    """Повернення до головного меню"""
     await call.answer()
     try:
         await call.message.edit_text(
@@ -21,7 +20,6 @@ async def main_menu_callback(call: CallbackQuery):
 
 
 async def settings_menu_callback(call: CallbackQuery):
-    """Відкриття меню налаштувань"""
     await call.answer()
     summary = ""
     async for session in get_session():

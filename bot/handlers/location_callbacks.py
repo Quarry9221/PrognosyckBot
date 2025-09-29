@@ -10,7 +10,6 @@ from bot.logger_config import logger
 
 
 async def set_location_callback(call: CallbackQuery, state: FSMContext):
-    """Початок процесу встановлення локації"""
     await call.answer()
 
     await call.message.edit_text(
@@ -28,7 +27,6 @@ async def set_location_callback(call: CallbackQuery, state: FSMContext):
 
 
 async def timezone_callback(call: CallbackQuery):
-    """Вибір часового поясу"""
     await call.answer()
 
     await call.message.edit_text(
@@ -40,7 +38,6 @@ async def timezone_callback(call: CallbackQuery):
 
 
 async def set_timezone_callback(call: CallbackQuery):
-    """Встановлення часового поясу"""
     await call.answer()
 
     _, timezone = call.data.split(":", 1)

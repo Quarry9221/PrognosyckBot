@@ -13,7 +13,6 @@ from db.crud import get_user_weather_settings, toggle_display_setting, update_us
 
 async def toggle_setting_callback(call: CallbackQuery):
     logger.info(f"Toggle callback: {call.data} from user {call.from_user.id}")
-    """Перемикання булевих налаштувань"""
     await call.answer()
 
     _, setting_name = call.data.split(":", 1)
@@ -30,7 +29,6 @@ async def toggle_setting_callback(call: CallbackQuery):
             show_alert=True,
         )
 
-        # Оновлюємо відповідну клавіатуру
         if setting_name == "notification_enabled":
             await notifications_settings_callback(call)
         else:
@@ -47,7 +45,6 @@ async def toggle_setting_callback(call: CallbackQuery):
 
 
 async def set_unit_callback(call: CallbackQuery):
-    """Встановлення одиниць виміру"""
     await call.answer()
 
     _, unit_type, unit_value = call.data.split(":", 2)
@@ -68,7 +65,6 @@ async def set_unit_callback(call: CallbackQuery):
             f"{unit_labels.get(unit_type, unit_type)}: {unit_value}", show_alert=True
         )
 
-        # Повертаємося до меню одиниць
         await units_settings_callback(call)
 
     except Exception as e:
@@ -79,7 +75,6 @@ async def set_unit_callback(call: CallbackQuery):
 
 
 async def temperature_unit_callback(call: CallbackQuery):
-    """Вибір одиниць температури"""
     await call.answer()
 
     async for session in get_session():
@@ -95,7 +90,6 @@ async def temperature_unit_callback(call: CallbackQuery):
 
 
 async def wind_speed_unit_callback(call: CallbackQuery):
-    """Вибір одиниць швидкості вітру"""
     await call.answer()
 
     async for session in get_session():
@@ -111,7 +105,6 @@ async def wind_speed_unit_callback(call: CallbackQuery):
 
 
 async def precipitation_unit_callback(call: CallbackQuery):
-    """Вибір одиниць опадів"""
     await call.answer()
 
     async for session in get_session():
@@ -141,7 +134,6 @@ async def precipitation_unit_callback(call: CallbackQuery):
 
 
 async def timeformat_unit_callback(call: CallbackQuery):
-    """Вибір формату часу"""
     await call.answer()
 
     async for session in get_session():
@@ -155,7 +147,6 @@ async def timeformat_unit_callback(call: CallbackQuery):
 
 
 async def set_timeformat_callback(call: CallbackQuery):
-    """Встановлення формату часу"""
     await call.answer()
 
     _, _, timeformat = call.data.split(":", 2)

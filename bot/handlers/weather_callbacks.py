@@ -9,7 +9,6 @@ from aiogram.exceptions import TelegramBadRequest
 
 
 async def current_weather_callback(call: CallbackQuery):
-    """Показати поточну погоду"""
     await call.answer()
     try:
         async for session in get_session():
@@ -62,18 +61,15 @@ async def current_weather_callback(call: CallbackQuery):
 
 
 async def weekly_weather_callback(call: CallbackQuery):
-    """Показати тижневий прогноз"""
     await call.answer("Отримуємо тижневий прогноз...")
-    await current_weather_callback(call)  # Використовуємо ту ж логіку
+    await current_weather_callback(call)
 
 
 async def hourly_weather_callback(call: CallbackQuery):
-    """Показати почасовий прогноз"""
     await call.answer("Почасовий прогноз поки в розробці", show_alert=True)
 
 
 async def today_weather_callback(call: CallbackQuery):
-    """Показати прогноз на сьогодні"""
     await call.answer("Отримуємо прогноз на сьогодні...")
     try:
         async for session in get_session():
@@ -124,7 +120,6 @@ async def today_weather_callback(call: CallbackQuery):
 
 
 async def three_days_weather_callback(call: CallbackQuery):
-    """Показати прогноз на 3 дні"""
     await call.answer("Отримуємо прогноз на 3 дні...")
     try:
         async for session in get_session():

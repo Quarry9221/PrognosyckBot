@@ -10,8 +10,8 @@ router = Router()
 async def weather_menu_handler(callback: CallbackQuery):
     data = callback.data.split(":")[1]
     if data == "current":
-        # приклад, можна доопрацювати
+
         await callback.message.answer("Поточна погода буде тут...")
     elif data == "weekly":
         await callback.message.answer("Тижневий прогноз буде тут...")
-    await callback.answer()  # щоб кнопка "клікалась"
+    await callback.answer()

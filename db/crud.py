@@ -401,18 +401,18 @@ async def get_user_settings_summary(session: AsyncSession, telegram_id: int) -> 
 
     summary = f"""Ваші налаштування:
 
-Локація: {location_info}
+    Локація: {location_info}
 
-Одиниці виміру:
-• Температура: {settings.temperature_unit}
-• Швидкість вітру: {settings.wind_speed_unit}
-• Опади: {settings.precipitation_unit}
+    Одиниці виміру:
+    • Температура: {settings.temperature_unit}
+    • Швидкість вітру: {settings.wind_speed_unit}
+    • Опади: {settings.precipitation_unit}
 
-Прогноз: {settings.forecast_days} днів
-Часовий пояс: {settings.timezone}
+    Прогноз: {settings.forecast_days} днів
+    Часовий пояс: {settings.timezone}
 
-Сповіщення: {'Увімкнені' if settings.notification_enabled else 'Вимкнені'}
-"""
+    Сповіщення: {'Увімкнені' if settings.notification_enabled else 'Вимкнені'}
+    """
     if settings.notification_enabled and settings.notification_time:
         summary += f"Час сповіщень: {settings.notification_time}\n"
 
@@ -474,9 +474,6 @@ async def set_user_state(session, telegram_id: int, state: str):
 
 
 async def save_notification_time(session, user_id: int, time_str: str):
-    """
-    Зберігає час щоденних сповіщень для користувача у таблиці user_weather_settings.
-    """
     query = await session.execute(
         select(UserWeatherSettings).where(UserWeatherSettings.user_id == user_id)
     )

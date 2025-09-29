@@ -1,4 +1,3 @@
-# bot/notifications.py
 import asyncio
 import datetime
 from bot.logger_config import logger
@@ -9,26 +8,22 @@ from bot.handlers.utils import format_weather_response
 from db.crud import get_api_parameters
 from services.weather import get_weather
 from db.models import UserWeatherSettings
-from db.session import async_session  # твій async_sessionmaker
+from db.session import async_session
 from sqlalchemy import select
 
 
 async def daily_notifications_scheduler(bot):
-    """
-    Фонова задача для щоденних сповіщень про погоду.
-    Бере користувачів, у яких увімкнені сповіщення та час співпадає з поточним.
-    """
     while True:
         now = datetime.datetime.now().strftime("%H:%M")
         try:
             async with async_session() as session:
-                # отримуємо об’єкти UserWeatherSettings
+
                 stmt = select(UserWeatherSettings).where(
                     UserWeatherSettings.notification_enabled.is_(True),
                     UserWeatherSettings.notification_time == now,
                 )
                 result = await session.execute(stmt)
-                users_settings = result.scalars().all()  # список ORM об’єктів
+                users_settings = result.scalars().all()
 
                 for settings in users_settings:
                     try:
@@ -67,4 +62,4 @@ async def daily_notifications_scheduler(bot):
                 f"Помилка при отриманні користувачів для щоденних сповіщень: {e}"
             )
 
-        await asyncio.sleep(60)  # перевірка щохвилини
+        await asyncio.sleep(60)

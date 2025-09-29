@@ -1,15 +1,10 @@
-# Тут можна класти допоміжні функції для обробки хендлерів
-
-
 async def format_weather_response(
     weather_data: dict, location_data: dict, api_params: dict
 ) -> str:
-    """Форматування відповіді з погодою"""
     city = location_data.get("city", "")
     state = location_data.get("state", "")
     country = location_data.get("country", "")
 
-    # Заголовок з локацією
     location_str = f"🌍 **{city}"
     if state:
         location_str += f", {state}"
@@ -19,7 +14,6 @@ async def format_weather_response(
 
     response = location_str
 
-    # Поточна погода
     current = weather_data.get("current", {})
     if current:
         temp_unit = "°C" if api_params.get("temperature_unit") == "celsius" else "°F"
@@ -47,12 +41,10 @@ async def format_weather_response(
 
         response += "\n"
 
-    # Денний прогноз
     daily = weather_data.get("daily", {})
     if daily and "time" in daily:
         response += "📅 **Прогноз на найближчі дні:**\n"
 
-        # Визначаємо кількість днів для прогнозу
         forecast_days = api_params.get("forecast_days")
         try:
             forecast_days = int(forecast_days)
@@ -71,7 +63,6 @@ async def format_weather_response(
             min_temp = temp_min[i] if i < len(temp_min) else "N/A"
             weather_code = weather_codes[i] if i < len(weather_codes) else 0
 
-            # Форматуємо дату
             try:
                 from datetime import datetime
 
@@ -98,7 +89,6 @@ async def format_weather_response(
 
 
 def get_weather_description(weather_code: int) -> str:
-    """Отримати опис погоди за WMO кодом"""
     descriptions = {
         0: "☀️ Ясно",
         1: "🌤️ Переважно ясно",

@@ -1,5 +1,3 @@
-# models.py - Покращена структура БД для погодного бота
-
 from sqlalchemy import (
     Column,
     Integer,
@@ -29,6 +27,7 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    state = Column(String(50), nullable=True)
 
 
 class UserWeatherSettings(Base):
@@ -42,24 +41,20 @@ class UserWeatherSettings(Base):
         unique=True,
     )
 
-    # Локація
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
     location_name = Column(String(255), nullable=True)
     elevation = Column(Float, nullable=True)
     timezone = Column(String(100), default="auto")
 
-    # Одиниці виміру
-    temperature_unit = Column(String(20), default="celsius")  # celsius, fahrenheit
-    wind_speed_unit = Column(String(10), default="kmh")  # kmh, ms, mph, kn
-    precipitation_unit = Column(String(10), default="mm")  # mm, inch
-    timeformat = Column(String(20), default="iso8601")  # iso8601, unixtime
+    temperature_unit = Column(String(20), default="celsius")
+    wind_speed_unit = Column(String(10), default="kmh")
+    precipitation_unit = Column(String(10), default="mm")
+    timeformat = Column(String(20), default="iso8601")
 
-    # Налаштування прогнозу
-    forecast_days = Column(Integer, default=7)  # 1-16
-    past_days = Column(Integer, default=0)  # 0-92
+    forecast_days = Column(Integer, default=7)
+    past_days = Column(Integer, default=0)
 
-    # Що показувати в hourly
     show_temperature = Column(Boolean, default=True)
     show_feels_like = Column(Boolean, default=True)
     show_humidity = Column(Boolean, default=True)
@@ -73,7 +68,6 @@ class UserWeatherSettings(Base):
     show_dew_point = Column(Boolean, default=False)
     show_solar_radiation = Column(Boolean, default=False)
 
-    # Що показувати в daily
     show_daily_temperature = Column(Boolean, default=True)
     show_daily_precipitation = Column(Boolean, default=True)
     show_daily_wind = Column(Boolean, default=True)
@@ -82,12 +76,10 @@ class UserWeatherSettings(Base):
     show_sunshine_duration = Column(Boolean, default=False)
     show_daily_uv = Column(Boolean, default=True)
 
-    # Що показувати в current
     show_current_weather = Column(Boolean, default=True)
 
-    # Налаштування повідомлень
     notification_enabled = Column(Boolean, default=False)
-    notification_time = Column(String(5), nullable=True)  # HH:MM format
+    notification_time = Column(String(5), nullable=True)
 
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
@@ -112,16 +104,13 @@ class BotChat(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     chat_id = Column(BigInteger, unique=True, index=True)
-    chat_type = Column(
-        String(50), nullable=False
-    )  # private, group, supergroup, channel
+    chat_type = Column(String(50), nullable=False)
     title = Column(String(255), nullable=True)
     added_at = Column(DateTime, default=datetime.now)
     last_activity = Column(DateTime, default=datetime.now)
     is_active = Column(Boolean, default=True)
 
 
-# Константи для валідації параметрів
 HOURLY_PARAMETERS = [
     "temperature_2m",
     "relative_humidity_2m",

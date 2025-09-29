@@ -1,5 +1,3 @@
-# services/weather.py - Покращений сервіс для роботи з Open-Meteo API
-
 import httpx
 from typing import Dict, Any, Optional
 from datetime import datetime, timedelta
@@ -7,13 +5,11 @@ from bot.logger_config import logger
 
 
 class WeatherAPIError(Exception):
-    """Помилка API погоди"""
 
     pass
 
 
 class WeatherService:
-    """Сервіс для роботи з Open-Meteo API"""
 
     BASE_URL = "https://api.open-meteo.com/v1/forecast"
 
@@ -21,21 +17,7 @@ class WeatherService:
     async def get_weather(
         latitude: float, longitude: float, params: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """
-        Отримати дані про погоду з Open-Meteo API
 
-        Args:
-            latitude: Широта
-            longitude: Довгота
-            params: Параметри API запиту
-
-        Returns:
-            Dict з даними про погоду
-
-        Raises:
-            WeatherAPIError: При помилці отримання даних
-        """
-        # Додаткова валідація типів
         if not isinstance(latitude, (float, int)) or not isinstance(
             longitude, (float, int)
         ):
@@ -48,10 +30,9 @@ class WeatherService:
             raise WeatherAPIError("Параметри мають бути словником")
 
         try:
-            # Підготовка параметрів запиту
+
             api_params = {"latitude": latitude, "longitude": longitude, **params}
 
-            # Перевірка наявності обов'язкових параметрів
             if not (-90 <= float(latitude) <= 90) or not (
                 -180 <= float(longitude) <= 180
             ):
@@ -64,19 +45,16 @@ class WeatherService:
                 f"Запит погоди для {latitude}, {longitude} з параметрами: {api_params}"
             )
 
-            # Виконання HTTP запиту
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.get(WeatherService.BASE_URL, params=api_params)
                 response.raise_for_status()
 
                 data = response.json()
 
-                # Перевіряємо наявність помилки в відповіді
                 if "error" in data:
                     logger.error(f"Open-Meteo API повернув помилку: {data['error']}")
                     raise WeatherAPIError(f"API помилка: {data['error']}")
 
-                # Логування успішної відповіді
                 logger.info(f"Успішно отримано дані погоди для {latitude}, {longitude}")
 
                 return data
@@ -117,18 +95,8 @@ class WeatherService:
 
     @staticmethod
     def validate_parameters(params: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Валідація та очищення параметрів API
-
-        Args:
-            params: Вхідні параметри
-
-        Returns:
-            Очищені параметри
-        """
         clean_params = {}
 
-        # Обов'язкові параметри
         if "latitude" not in params or "longitude" not in params:
             logger.warning(f"Відсутні координати у параметрах: {params}")
             raise ValueError("Широта та довгота обов'язкові")
@@ -140,7 +108,6 @@ class WeatherService:
             logger.warning(f"Некоректний тип координат: {params}")
             raise ValueError("Координати мають бути числами")
 
-        # Валідація координат
         if not (-90 <= clean_params["latitude"] <= 90):
             logger.warning(f"Широта поза межами: {clean_params['latitude']}")
             raise ValueError("Широта повинна бути між -90 та 90")
@@ -148,7 +115,6 @@ class WeatherService:
             logger.warning(f"Довгота поза межами: {clean_params['longitude']}")
             raise ValueError("Довгота повинна бути між -180 та 180")
 
-        # Опціональні параметри з валідацією
         if "elevation" in params and params["elevation"] is not None:
             try:
                 elevation = float(params["elevation"])
@@ -178,7 +144,6 @@ class WeatherService:
             except Exception:
                 logger.warning(f"Некоректний past_days: {params['past_days']}")
 
-        # Одиниці виміру
         valid_temp_units = ["celsius", "fahrenheit"]
         if params.get("temperature_unit") in valid_temp_units:
             clean_params["temperature_unit"] = params["temperature_unit"]
@@ -209,11 +174,9 @@ class WeatherService:
         elif "timeformat" in params:
             logger.warning(f"Некоректний формат часу: {params.get('timeformat')}")
 
-        # Часовий пояс
         if "timezone" in params and params["timezone"]:
             clean_params["timezone"] = str(params["timezone"])
 
-        # Параметри погодних змінних
         for param_type in ["hourly", "daily", "current"]:
             if param_type in params and params[param_type]:
                 if isinstance(params[param_type], str):
@@ -229,9 +192,7 @@ class WeatherService:
 
 
 class WeatherFormatter:
-    """Клас для форматування даних про погоду"""
 
-    # Словник для перекладу кодів погоди
     WEATHER_CODES = {
         0: {"description": "Ясно", "emoji": "☀️"},
         1: {"description": "Переважно ясно", "emoji": "🌤️"},
@@ -265,14 +226,12 @@ class WeatherFormatter:
 
     @staticmethod
     def get_weather_description(weather_code: int) -> Dict[str, str]:
-        """Отримати опис погоди за кодом"""
         return WeatherFormatter.WEATHER_CODES.get(
             weather_code, {"description": f"Код {weather_code}", "emoji": "❓"}
         )
 
     @staticmethod
     def format_temperature(temp: float, unit: str = "celsius") -> str:
-        """Форматування температури"""
         if temp is None:
             return "N/A"
 
@@ -281,15 +240,12 @@ class WeatherFormatter:
 
     @staticmethod
     def format_wind(speed: float, direction: int, unit: str = "kmh") -> str:
-        """Форматування вітру"""
         if speed is None:
             return "N/A"
 
-        # Одиниці виміру
         unit_symbols = {"kmh": "км/год", "ms": "м/с", "mph": "миль/год", "kn": "вузли"}
         unit_symbol = unit_symbols.get(unit, unit)
 
-        # Напрямок вітру
         directions = [
             "Пн",
             "ПнПнСх",
@@ -318,21 +274,18 @@ class WeatherFormatter:
 
     @staticmethod
     def format_humidity(humidity: float) -> str:
-        """Форматування вологості"""
         if humidity is None:
             return "N/A"
         return f"{humidity:.0f}%"
 
     @staticmethod
     def format_pressure(pressure: float) -> str:
-        """Форматування тиску"""
         if pressure is None:
             return "N/A"
         return f"{pressure:.0f} hPa"
 
     @staticmethod
     def format_precipitation(precip: float, unit: str = "mm") -> str:
-        """Форматування опадів"""
         if precip is None or precip == 0:
             return "0 мм"
 
@@ -341,7 +294,6 @@ class WeatherFormatter:
 
     @staticmethod
     def format_datetime(dt_str: str, format_type: str = "date") -> str:
-        """Форматування дати та часу"""
         try:
             dt = datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
 
@@ -367,21 +319,9 @@ class WeatherFormatter:
             return dt_str
 
 
-# Функція для зворотної сумісності
 async def get_weather(
     latitude: float, longitude: float, params: Dict[str, Any]
 ) -> Dict[str, Any]:
-    """
-    Функція для зворотної сумісності з існуючим кодом
-
-    Args:
-        latitude: Широта
-        longitude: Довгота
-        params: Параметри запиту
-
-    Returns:
-        Dict з даними про погоду
-    """
     validated_params = WeatherService.validate_parameters(
         {"latitude": latitude, "longitude": longitude, **params}
     )

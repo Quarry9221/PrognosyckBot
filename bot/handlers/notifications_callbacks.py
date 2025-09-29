@@ -6,7 +6,6 @@ from db.database import get_session
 
 
 async def notifications_settings_callback(call: CallbackQuery):
-    """Налаштування сповіщень"""
     await call.answer()
 
     async for session in get_session():
@@ -27,10 +26,8 @@ async def notifications_settings_callback(call: CallbackQuery):
 
 
 async def notifications_time_callback(call: CallbackQuery):
-    """Обробник вибору часу сповіщень"""
     await call.answer()
 
-    # Встановлюємо стан користувача на очікування часу
     async for session in get_session():
         await set_user_state(session, call.from_user.id, "AWAITING_NOTIFICATION_TIME")
 

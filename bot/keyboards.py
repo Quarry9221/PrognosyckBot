@@ -1,4 +1,4 @@
-# keyboards.py - Покращені клавіатури з урахуванням Open-Meteo параметрів
+
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from typing import Dict, Any
@@ -6,7 +6,6 @@ from typing import Dict, Any
 class WeatherKeyboards:
     @staticmethod
     def forecast_past_days_selector(current: int = 0) -> InlineKeyboardMarkup:
-        """Вибір кількості минулих днів для історичного прогнозу"""
         keyboard = []
         days_options = [0, 1, 2, 3, 5, 7]
         for days in days_options:
@@ -20,7 +19,6 @@ class WeatherKeyboards:
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
     @staticmethod
     def main_menu() -> InlineKeyboardMarkup:
-        """Головне меню погодного бота"""
         keyboard = [
             [InlineKeyboardButton(text="🌦️ Поточна погода", callback_data="weather:current")],
             [
@@ -37,7 +35,6 @@ class WeatherKeyboards:
 
     @staticmethod
     def settings_menu() -> InlineKeyboardMarkup:
-        """Головне меню налаштувань"""
         keyboard = [
             [InlineKeyboardButton(text="📍 Локація та часовий пояс", callback_data="settings:location")],
             [InlineKeyboardButton(text="📏 Одиниці виміру", callback_data="settings:units")],
@@ -51,7 +48,6 @@ class WeatherKeyboards:
 
     @staticmethod
     def location_settings() -> InlineKeyboardMarkup:
-        """Налаштування локації"""
         keyboard = [
             [InlineKeyboardButton(text="🌍 Встановити локацію", callback_data="location:set")],
             [InlineKeyboardButton(text="🕐 Часовий пояс", callback_data="location:timezone")],
@@ -62,7 +58,6 @@ class WeatherKeyboards:
 
     @staticmethod
     def units_settings(current_units: Dict[str, str] = None) -> InlineKeyboardMarkup:
-        """Налаштування одиниць виміру"""
         if not current_units:
             current_units = {
                 'temperature_unit': 'celsius',
@@ -87,7 +82,6 @@ class WeatherKeyboards:
 
     @staticmethod
     def temperature_unit_selector(current: str = 'celsius') -> InlineKeyboardMarkup:
-        """Вибір одиниць температури"""
         keyboard = [
             [InlineKeyboardButton(
                 text=f"{'✅' if current == 'celsius' else '⚪'} Цельсій (°C)", 
@@ -103,7 +97,6 @@ class WeatherKeyboards:
 
     @staticmethod
     def wind_speed_unit_selector(current: str = 'kmh') -> InlineKeyboardMarkup:
-        """Вибір одиниць швидкості вітру"""
         options = {
             'kmh': 'Кілометри/година (км/год)',
             'ms': 'Метри/секунда (м/с)',
@@ -122,11 +115,10 @@ class WeatherKeyboards:
         keyboard.append([InlineKeyboardButton(text="⬅️ Назад", callback_data="settings:units")])
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
     
-    # In keyboards.py, add to WeatherKeyboards class
+    
 
     @staticmethod
     def timeformat_unit_selector(current: str = 'iso8601') -> InlineKeyboardMarkup:
-        """Вибір формату часу"""
         keyboard = [
             [InlineKeyboardButton(
                 text=f"{'✅' if current == 'iso8601' else '⚪'} ISO8601 (2025-09-28T16:55:01Z)", 
@@ -142,7 +134,6 @@ class WeatherKeyboards:
     
     @staticmethod
     def display_settings(settings: Dict[str, bool] = None) -> InlineKeyboardMarkup:
-        """Налаштування відображення даних"""
         if not settings:
             settings = {}
         
@@ -210,7 +201,6 @@ class WeatherKeyboards:
 
     @staticmethod
     def forecast_settings(settings: Dict[str, Any] = None) -> InlineKeyboardMarkup:
-        """Налаштування прогнозу"""
         if not settings:
             settings = {'forecast_days': 7, 'past_days': 0}
         
@@ -229,7 +219,6 @@ class WeatherKeyboards:
 
     @staticmethod
     def forecast_days_selector(current: int = 7) -> InlineKeyboardMarkup:
-        """Вибір кількості днів прогнозу"""
         keyboard = []
         days_options = [1, 3, 5, 7, 10, 14, 16]
         
@@ -246,7 +235,6 @@ class WeatherKeyboards:
 
     @staticmethod
     def notifications_settings(settings: Dict[str, Any] = None) -> InlineKeyboardMarkup:
-        """Налаштування сповіщень"""
         if not settings:
             settings = {'notification_enabled': False, 'notification_time': None}
 
@@ -272,7 +260,6 @@ class WeatherKeyboards:
 
     @staticmethod
     def timezone_selector() -> InlineKeyboardMarkup:
-        """Вибір часового поясу"""
         keyboard = [
             [InlineKeyboardButton(text="🌐 Автоматично", callback_data="set_timezone:auto")],
             [InlineKeyboardButton(text="🇺🇦 Київ (Europe/Kyiv)", callback_data="set_timezone:Europe/Kyiv")],
@@ -287,7 +274,6 @@ class WeatherKeyboards:
 
     @staticmethod
     def weather_type_menu() -> InlineKeyboardMarkup:
-        """Меню вибору типу погодної інформації"""
         keyboard = [
             [InlineKeyboardButton(text="☀️ Поточна погода", callback_data="weather:current")],
             [InlineKeyboardButton(text="📅 На сьогодні", callback_data="weather:today")],
@@ -300,7 +286,6 @@ class WeatherKeyboards:
 
     @staticmethod
     def confirmation_dialog(action: str, item: str) -> InlineKeyboardMarkup:
-        """Діалог підтвердження дії"""
         keyboard = [
             [
                 InlineKeyboardButton(text="✅ Так", callback_data=f"confirm:{action}:{item}"),
@@ -311,14 +296,12 @@ class WeatherKeyboards:
 
     @staticmethod
     def back_button(callback_data: str = "menu:main") -> InlineKeyboardMarkup:
-        """Проста кнопка назад"""
         return InlineKeyboardMarkup(inline_keyboard=[[
             InlineKeyboardButton(text="⬅️ Назад", callback_data=callback_data)
         ]])
 
     @staticmethod
     def location_input_help() -> InlineKeyboardMarkup:
-        """Допомога для введення локації"""
         keyboard = [
             [InlineKeyboardButton(text="📍 Надіслати геолокацію", callback_data="location:share")],
             [InlineKeyboardButton(text="⬅️ Назад", callback_data="settings:location")]
@@ -327,7 +310,6 @@ class WeatherKeyboards:
 
     @staticmethod
     def advanced_display_settings(settings: Dict[str, bool] = None) -> InlineKeyboardMarkup:
-        """Розширені налаштування відображення"""
         if not settings:
             settings = {}
         
@@ -356,7 +338,6 @@ class WeatherKeyboards:
         ]
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
-# Для сумісності зі старим кодом
+
 class InlineKeyboards(WeatherKeyboards):
-    """Backward compatibility"""
     pass

@@ -19,12 +19,10 @@ async def main():
     )
     dp = Dispatcher()
 
-    # Реєстрація хендлерів
     from bot.handlers import register_handlers
 
     register_handlers(dp)
 
-    # Запуск фонового шедулера
     asyncio.create_task(daily_notifications_scheduler(bot))
 
     await dp.start_polling(bot)

@@ -1,4 +1,3 @@
-# bot/handlers/settings_callbacks.py
 from aiogram import types
 from bot.keyboards import WeatherKeyboards
 from db.crud import get_user_settings_summary, get_user_weather_settings
@@ -8,7 +7,6 @@ from bot.logger_config import logger
 
 
 async def units_settings_callback(call: CallbackQuery):
-    """Налаштування одиниць виміру"""
     await call.answer()
     async for session in get_session():
         settings = await get_user_weather_settings(session, call.from_user.id)
@@ -32,7 +30,6 @@ async def units_settings_callback(call: CallbackQuery):
 
 
 async def location_settings_callback(call: CallbackQuery):
-    """Налаштування локації"""
     await call.answer()
     async for session in get_session():
         settings = await get_user_weather_settings(session, call.from_user.id)
@@ -59,7 +56,6 @@ async def location_settings_callback(call: CallbackQuery):
 
 
 async def display_settings_callback(call: CallbackQuery):
-    """Налаштування відображення"""
     await call.answer()
     async for session in get_session():
         settings = await get_user_weather_settings(session, call.from_user.id)
@@ -92,7 +88,6 @@ async def display_settings_callback(call: CallbackQuery):
 
 
 async def settings_summary_callback(call: CallbackQuery):
-    """Показати детальний опис налаштувань"""
     await call.answer()
 
     async for session in get_session():
@@ -106,7 +101,6 @@ async def settings_summary_callback(call: CallbackQuery):
 
 
 async def edit_notifications_display_callback(call: CallbackQuery):
-    """Відкрити меню налаштування відображення для сповіщень"""
     await call.answer()
     async for session in get_session():
         settings = await get_user_weather_settings(session, call.from_user.id)
